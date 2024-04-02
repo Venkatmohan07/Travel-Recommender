@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import joblib
+import folium
 
 # Load precomputed data
 cosine_sim = joblib.load('COSINE_SIMILARITY.pkl')
@@ -29,10 +30,34 @@ def main():
         recommendations = tourism_recommendations(place)
         if recommendations is not None and not recommendations.empty:
             st.subheader("Top Recommendations")
-            st.dataframe(recommendations.style.highlight_max(axis=0))
+            st.write(recommendations)
+
+            # Interactive map visualization of recommendations
+            st.subheader("Map View of Recommendations")
+            map_center = (recommendations['latitude'].mean(), recommendations['longitude'].mean())
+            map_zoom = 10
+            my_map = folium.Map(location=map_center, zoom_start=map_zoom)
+
+            for index, row in recommendations.iterrows():
+                folium.Marker([row['latitude'], row['longitude']], popup=row['name']).add_to(my_map)
+
+            folium_static(my_map)
+
+            # Feedback section
+            st.subheader("Feedback")
+            feedback = st.text_area("Share your feedback on the recommendations")
+
+            if st.button("Submit Feedback"):
+                if feedback:
+                    st.success("Thank you for your feedback!")
+                    # TODO: Store feedback in database or file
+                else:
+                    st.warning("Please provide feedback before submitting.")
+
         else:
             st.error("Sorry! No recommendations found.")
 
 if __name__ == '__main__':
     main()
+
 

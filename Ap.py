@@ -8,13 +8,17 @@ ds = joblib.load('DATA_ITEMS.pkl')
 
 # Function to recommend places
 def tourism_recommendations(place_name):
-     similarity_data=cosine_sim
-     items=ds[['name','category','description','city']]
-     k=5
-     index = similarity_data.loc[:, place_name].to_numpy().argsort()[::-1][:k]
-     closest = similarity_data.columns[index[-1:-(k+2):-1]]
-     closest = closest.drop(place_name, errors='ignore')
-     return pd.DataFrame(closest).merge(items).head(k)
+    try:
+        similarity_data = cosine_sim
+        items = ds[['name', 'category', 'description', 'city']]
+    
+        k = 5
+        index = similarity_data.loc[:, place_name].to_numpy().argsort()[::-1][:k]
+        closest = similarity_data.columns[index[-1:-(k+2):-1]]
+        closest = closest.drop(place_name, errors='ignore')
+        return pd.DataFrame(closest).merge(items).head(k)
+    except Exception as e:
+       pass
 
 # Streamlit app
 def main():
@@ -33,10 +37,8 @@ def main():
         if recommendations is not None and not recommendations.empty:
             st.write(recommendations)
         else:
-            st.write("Sorry! No recommendations found.")
+            st.warning("Sorry! No recommendations found.")
 
 if __name__ == '__main__':
     main()
 
-
-      
